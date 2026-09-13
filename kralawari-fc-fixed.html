@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kralawari FC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pitch:#150f22;
+    --pitch-2:#241a3b;
+    --grass:#4b2a86;
+    --gold:#bb92e6;
+    --gold-dim:#8f66c2;
+    --cream:#f4f1ea;
+    --ink:#14111d;
+    --paper:#fbfaf9;
+    --line:rgba(20,17,29,0.12);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    background:var(--paper);
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    letter-spacing:0.01em;
+  }
+  img{max-width:100%;display:block;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;}
+  a{color:inherit;text-decoration:none;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:fixed;top:0;left:0;right:0;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 20px;
+    z-index:100;
+    background:linear-gradient(to bottom, rgba(15,40,24,0.85), rgba(15,40,24,0));
+    pointer-events:none;
+  }
+  .topbar.solid{
+    background:var(--pitch);
+    box-shadow:0 2px 14px rgba(0,0,0,0.2);
+  }
+  .brand{
+    display:flex;align-items:center;gap:10px;
+    pointer-events:auto;
+    color:var(--cream);
+  }
+  .crest{
+    width:38px;height:38px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--gold), var(--gold-dim));
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Oswald',sans-serif;font-weight:700;font-size:13px;
+    color:var(--pitch);
+    box-shadow:0 0 0 2px rgba(255,255,255,0.15);
+    flex-shrink:0;
+  }
+  .brand-name{font-family:'Oswald',sans-serif;font-size:16px;letter-spacing:0.03em;}
+  .menu-btn{
+    pointer-events:auto;
+    width:42px;height:42px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  }
+  .menu-btn span{
+    display:block;width:22px;height:2px;background:var(--cream);
+    transition:transform .35s ease, opacity .25s ease;
+  }
+  .menu-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+  .menu-btn.open span:nth-child(2){opacity:0;}
+  .menu-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+  /* ---------- Nav overlay ---------- */
+  .nav-overlay{
+    position:fixed;inset:0;
+    background:var(--pitch);
+    z-index:90;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:80px 32px;
+    transform:translateY(-100%);
+    transition:transform .5s cubic-bezier(.65,0,.35,1);
+  }
+  .nav-overlay.active{transform:translateY(0);}
+  .nav-overlay a{
+    font-family:'Oswald',sans-serif;
+    font-size:clamp(28px,7vw,42px);
+    color:var(--cream);
+    padding:14px 0;
+    border-bottom:1px solid rgba(244,241,232,0.12);
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .nav-overlay a span.num{color:var(--gold);font-size:15px;font-family:'Inter',sans-serif;}
+  .nav-foot{
+    margin-top:36px;color:rgba(244,241,232,0.55);font-size:13px;line-height:1.7;
+  }
+
+  /* ---------- Sections base ---------- */
+  section{padding:96px 20px 88px;max-width:1080px;margin:0 auto;}
+  .eyebrow{display:none;} /* intentionally unused */
+  .section-head{margin-bottom:40px;max-width:560px;}
+  .section-head h2{font-size:clamp(28px,5vw,40px);line-height:1.1;color:var(--pitch);}
+  .section-head p{margin-top:14px;color:#4a4840;font-size:16px;line-height:1.6;max-width:60ch;}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative;
+    min-height:100svh;
+    display:flex;flex-direction:column;justify-content:flex-end;
+    padding:0;
+    max-width:none;
+    background:var(--pitch);
+    overflow:hidden;
+  }
+  .hero::before{
+    content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(47,107,60,0.55), transparent 55%),
+      repeating-linear-gradient(115deg, rgba(255,255,255,0.025) 0 2px, transparent 2px 34px);
+    pointer-events:none;
+  }
+  .hero-intro{
+    position:relative;z-index:2;
+    text-align:center;
+    padding:140px 24px 40px;
+    opacity:0;
+    animation: rise .9s .15s ease forwards;
+  }
+  .hero-crest{
+    width:84px;height:84px;border-radius:50%;margin:0 auto 22px;
+    background:radial-gradient(circle at 35% 30%, var(--gold), var(--gold-dim));
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Oswald',sans-serif;font-weight:700;font-size:26px;color:var(--pitch);
+    box-shadow:0 0 0 3px rgba(255,255,255,0.14), 0 20px 40px rgba(0,0,0,0.35);
+  }
+  .hero-intro h1{
+    color:var(--cream);
+    font-size:clamp(34px,9vw,64px);
+    line-height:1;
+    letter-spacing:0.01em;
+  }
+  .hero-intro .est{
+    color:var(--gold);font-family:'Inter',sans-serif;font-size:13px;
+    letter-spacing:0.12em;margin-top:14px;
+  }
+  .hero-intro .tag{
+    color:rgba(244,241,232,0.75);
+    margin-top:16px;font-size:16px;max-width:38ch;margin-left:auto;margin-right:auto;line-height:1.6;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+
+  /* carousel */
+  .carousel-wrap{
+    position:relative;z-index:2;
+    padding-bottom:56px;
+  }
+  .carousel{
+    display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;
+    padding:0 20px 14px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .carousel::-webkit-scrollbar{display:none;}
+  .slide{
+    scroll-snap-align:center;
+    flex:0 0 auto;
+    width:min(72vw,300px);
+    aspect-ratio:4/5;
+    border-radius:6px;
+    position:relative;
+    overflow:hidden;
+    background:
+      linear-gradient(160deg, var(--pitch-2), var(--pitch) 70%);
+    border:1px solid rgba(244,241,232,0.1);
+    display:flex;align-items:flex-end;
+  }
+  .slide::before{
+    content:attr(data-n);
+    position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-58%);
+    font-family:'Oswald',sans-serif;
+    font-size:120px;font-weight:700;
+    color:rgba(244,241,232,0.06);
+  }
+  .slide .cap{
+    position:relative;z-index:1;padding:16px;color:rgba(244,241,232,0.85);font-size:13px;
+    letter-spacing:0.02em;
+  }
+  .carousel-hint{
+    text-align:center;color:rgba(244,241,232,0.4);font-size:12px;margin-top:2px;
+  }
+
+  /* ---------- About ---------- */
+  .about{background:var(--paper);}
+  .about-copy p{
+    font-size:17px;line-height:1.75;color:#2b291f;max-width:62ch;
+  }
+  .about-copy p + p{margin-top:16px;}
+  .stat-row{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+    background:var(--line);
+    margin-top:44px;border:1px solid var(--line);
+  }
+  .stat{background:var(--paper);padding:22px 16px;text-align:center;}
+  .stat b{display:block;font-family:'Oswald',sans-serif;font-size:30px;color:var(--pitch);}
+  .stat span{font-size:12.5px;color:#6b6858;display:block;margin-top:4px;}
+
+  /* ---------- Squad ---------- */
+  .squad{background:var(--pitch);color:var(--cream);}
+  .squad .section-head h2{color:var(--cream);}
+  .squad .section-head p{color:rgba(244,241,232,0.65);}
+  .pos-tabs{
+    display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px;
+  }
+  .pos-tab{
+    padding:9px 16px;border-radius:30px;
+    border:1px solid rgba(244,241,232,0.25);
+    color:rgba(244,241,232,0.75);
+    font-size:13.5px;font-family:'Inter',sans-serif;font-weight:500;
+    transition:all .25s ease;
+  }
+  .pos-tab.active{
+    background:var(--gold);border-color:var(--gold);color:var(--pitch);
+  }
+  .roster{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+    gap:14px;
+  }
+  .player{
+    background:rgba(244,241,232,0.04);
+    border:1px solid rgba(244,241,232,0.1);
+    border-radius:4px;overflow:hidden;
+    transition:transform .3s ease, border-color .3s ease;
+  }
+  .player:hover{transform:translateY(-3px);border-color:rgba(201,164,76,0.5);}
+  .player-photo{
+    aspect-ratio:3/4;position:relative;
+    background:linear-gradient(155deg, var(--pitch-2), #0a1c11);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .player-photo span{
+    font-family:'Oswald',sans-serif;font-size:52px;font-weight:700;
+    color:rgba(201,164,76,0.35);
+  }
+  .player-info{padding:10px 12px;}
+  .player-info .pname{font-size:14px;font-weight:500;}
+  .player-info .pnum{font-size:12px;color:var(--gold);margin-top:2px;}
+
+  /* ---------- Sponsors ---------- */
+  .sponsors{background:var(--paper);}
+  .sponsor-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+    gap:14px;
+  }
+  .sponsor-box{
+    aspect-ratio:16/10;border:1px dashed var(--line);border-radius:4px;
+    display:flex;align-items:center;justify-content:center;
+    color:#9a9788;font-size:12.5px;text-align:center;padding:10px;
+  }
+
+  /* ---------- Sponsor CTA ---------- */
+  .sponsor-cta{
+    background:linear-gradient(120deg, #1b1a14, var(--pitch) 75%);
+    max-width:none;padding:80px 20px;
+    text-align:center;
+  }
+  .sponsor-cta .inner{max-width:560px;margin:0 auto;}
+  .sponsor-cta h2{color:var(--cream);font-size:clamp(26px,5vw,36px);line-height:1.15;}
+  .sponsor-cta p{color:rgba(244,241,232,0.68);margin-top:16px;font-size:15.5px;line-height:1.7;}
+  .cta-btn{
+    display:inline-block;margin-top:28px;
+    background:var(--gold);color:var(--pitch);
+    padding:14px 30px;border-radius:2px;
+    font-family:'Oswald',sans-serif;font-size:15px;letter-spacing:0.02em;
+    transition:background .25s ease;
+  }
+  .cta-btn:hover{background:#e0bd6a;}
+
+  /* ---------- Contact ---------- */
+  .contact{background:var(--paper);}
+  .contact-grid{display:grid;grid-template-columns:1fr;gap:32px;}
+  @media(min-width:760px){.contact-grid{grid-template-columns:1fr 1.2fr;}}
+  .contact-info dl{margin-top:6px;}
+  .contact-info dt{font-size:12.5px;color:#8a8776;margin-top:20px;}
+  .contact-info dd{font-size:17px;margin-top:3px;font-family:'Oswald',sans-serif;font-weight:500;color:var(--pitch);}
+  .social-row{display:flex;gap:10px;margin-top:24px;}
+  .social-pill{
+    border:1px solid var(--line);border-radius:30px;padding:9px 16px;font-size:13.5px;
+  }
+  .map-frame{
+    width:100%;aspect-ratio:4/3;border-radius:4px;overflow:hidden;border:1px solid var(--line);
+  }
+  .map-frame iframe{width:100%;height:100%;border:0;}
+
+  footer{
+    background:var(--ink);color:rgba(244,241,232,0.5);
+    text-align:center;padding:28px 20px;font-size:13px;
+  }
+  footer b{color:rgba(244,241,232,0.85);}
+
+  /* ---------- Sponsor ticker (looping, top of page) ---------- */
+  .ticker{
+    position:relative;z-index:2;
+    background:var(--ink);
+    border-bottom:1px solid rgba(244,241,232,0.08);
+    overflow:hidden;white-space:nowrap;
+    padding:9px 0;
+  }
+  .ticker-track{
+    display:inline-flex;
+    animation:tickerScroll 16s linear infinite;
+  }
+  .ticker-track span{
+    display:inline-flex;align-items:center;
+    font-family:'Oswald',sans-serif;
+    font-size:12.5px;letter-spacing:0.06em;
+    color:var(--gold);
+    padding:0 28px;
+  }
+  .ticker-track span::after{
+    content:"\2726";
+    margin-left:28px;color:rgba(244,241,232,0.25);
+    font-size:10px;
+  }
+  @keyframes tickerScroll{
+    from{transform:translateX(0);}
+    to{transform:translateX(-50%);}
+  }
+
+  /* ---------- Nav link stagger ---------- */
+  .nav-overlay a{
+    opacity:0;transform:translateY(14px);
+    transition:opacity .4s ease, transform .4s ease, border-color .2s ease;
+  }
+  .nav-overlay.active a{opacity:1;transform:translateY(0);}
+  .nav-overlay.active a:nth-child(1){transition-delay:.08s;}
+  .nav-overlay.active a:nth-child(2){transition-delay:.14s;}
+  .nav-overlay.active a:nth-child(3){transition-delay:.2s;}
+  .nav-overlay.active a:nth-child(4){transition-delay:.26s;}
+  .nav-overlay.active a:nth-child(5){transition-delay:.32s;}
+
+  /* ---------- Scroll reveal ---------- */
+  .reveal{
+    opacity:0;transform:translateY(26px);
+    transition:opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1);
+  }
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  /* ---------- Squad card entrance ---------- */
+  .player{
+    opacity:0;transform:translateY(10px) scale(.97);
+    animation:playerIn .5s ease forwards;
+  }
+  @keyframes playerIn{to{opacity:1;transform:translateY(0) scale(1);}}
+
+  /* ---------- Sponsor CTA subtle glow ---------- */
+  .sponsor-cta{position:relative;}
+  .sponsor-cta::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 20% 30%, rgba(187,146,230,0.18), transparent 55%);
+    animation:glowShift 7s ease-in-out infinite alternate;
+    pointer-events:none;
+  }
+  @keyframes glowShift{
+    from{opacity:.6; transform:translateX(0);}
+    to{opacity:1; transform:translateX(30px);}
+  }
+  .cta-btn{position:relative;z-index:1;}
+
+  @media(prefers-reduced-motion:reduce){
+    .hero-intro{animation:none;opacity:1;}
+    html{scroll-behavior:auto;}
+    .ticker-track,.sponsor-cta::before{animation:none;}
+    .reveal{opacity:1;transform:none;}
+    .player{opacity:1;transform:none;animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar" id="topbar">
+  <div class="brand">
+    <div class="crest">KFC</div>
+    <div class="brand-name">Kralawari FC</div>
+  </div>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+
+<nav class="nav-overlay" id="navOverlay">
+  <a href="#about" data-close><span>About the Club</span><span class="num">01</span></a>
+  <a href="#squad" data-close><span>Squad</span><span class="num">02</span></a>
+  <a href="#sponsors" data-close><span>Sponsors</span><span class="num">03</span></a>
+  <a href="#sponsor-cta" data-close><span>Sponsor Us</span><span class="num">04</span></a>
+  <a href="#contact" data-close><span>Contact</span><span class="num">05</span></a>
+  <div class="nav-foot">Kralwari, Chadoora · Budgam, J&amp;K<br>@kralawari_fc</div>
+</nav>
+
+<header class="hero">
+  <div class="ticker">
+    <div class="ticker-track">
+      <span>WANT TO SPONSOR US</span>
+      <span>WANT TO SPONSOR US</span>
+      <span>WANT TO SPONSOR US</span>
+      <span>WANT TO SPONSOR US</span>
+    </div>
+  </div>
+  <div class="hero-intro">
+    <div class="hero-crest">KFC</div>
+    <h1>KRALAWARI FC</h1>
+    <div class="est">EST. 2018 &middot; KRALWARI, CHADOORA</div>
+    <p class="tag">A local club built on teamwork, discipline, and hard work &mdash; giving young players a real platform to compete and grow.</p>
+  </div>
+  <div class="carousel-wrap">
+    <div class="carousel" id="carousel">
+      <div class="slide" data-n="01"><div class="cap">Match day &mdash; add photo</div></div>
+      <div class="slide" data-n="02"><div class="cap">Training session &mdash; add photo</div></div>
+      <div class="slide" data-n="03"><div class="cap">Matchday squad &mdash; add photo</div></div>
+      <div class="slide" data-n="04"><div class="cap">Goal celebration &mdash; add photo</div></div>
+      <div class="slide" data-n="05"><div class="cap">Pre-season &mdash; add photo</div></div>
+      <div class="slide" data-n="06"><div class="cap">Local derby &mdash; add photo</div></div>
+    </div>
+    <div class="carousel-hint">swipe to browse</div>
+  </div>
+</header>
+
+<section id="about" class="about">
+  <div class="section-head reveal">
+    <h2>Built by the community, for the community</h2>
+  </div>
+  <div class="about-copy">
+    <p>Founded in 2018 in Kralwari, Chadoora, Budgam, Kralawari FC is more than a football club &mdash; it's a home for local talent. Born from a shared passion for the game, KFC brings together young players determined to represent their community with pride, on and off the pitch.</p>
+    <p>Built on teamwork, discipline, and relentless hard work, the club gives local youth a real platform to compete, sharpen their skills, and rise together. From local leagues to local tournaments, every match is a step forward &mdash; for the players, and for Kralwari.</p>
+  </div>
+  <div class="stat-row reveal">
+    <div class="stat"><b>2018</b><span>Founded</span></div>
+    <div class="stat"><b id="squadCount">0</b><span>Squad members</span></div>
+    <div class="stat"><b>4</b><span>Positions covered</span></div>
+  </div>
+</section>
+
+<section id="squad" class="squad">
+  <div class="section-head reveal">
+    <h2>SQUAD 26/27</h2>
+    <p>Meet the Kralawari FC squad for the 2026/27 season.</p>
+  </div>
+  <div class="roster" id="roster"></div>
+</section>
+
+<section id="sponsors" class="sponsors">
+  <div class="section-head reveal">
+    <h2>Our Sponsors</h2>
+    <p>Kralawari FC is proud to be backed by the people and businesses who believe in local football.</p>
+  </div>
+  <div class="sponsor-grid">
+    <div class="sponsor-box">Sponsor logo</div>
+    <div class="sponsor-box">Sponsor logo</div>
+    <div class="sponsor-box">Sponsor logo</div>
+    <div class="sponsor-box">Sponsor logo</div>
+  </div>
+</section>
+
+<section id="sponsor-cta" class="sponsor-cta">
+  <div class="inner">
+    <h2>Back a club on the rise</h2>
+    <p>Kralawari FC is growing fast &mdash; new players, new tournaments, and a community that shows up. Partner with us and put your name behind it.</p>
+    <a href="#contact" class="cta-btn" data-close>Get in touch</a>
+  </div>
+</section>
+
+<section id="contact" class="contact">
+  <div class="section-head reveal">
+    <h2>Get in Touch</h2>
+    <p>For sponsorship, matches, or just to say hello.</p>
+  </div>
+  <div class="contact-grid">
+    <div class="contact-info">
+      <dl>
+        <dt>Email</dt>
+        <dd>kralawarifc@gmail.com</dd>
+        <dt>Instagram</dt>
+        <dd>@kralawari_fc</dd>
+        <dt>Location</dt>
+        <dd>Kralwari, Chadoora<br>Budgam, J&amp;K &mdash; 191113</dd>
+      </dl>
+      <div class="social-row">
+        <a class="social-pill" href="https://instagram.com/kralawari_fc" target="_blank" rel="noopener">Instagram</a>
+        <a class="social-pill" href="mailto:kralawarifc@gmail.com">Email us</a>
+      </div>
+    </div>
+    <div class="map-frame">
+      <iframe loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        src="https://www.google.com/maps?q=Kralwari,Chadoora,Budgam,191113&output=embed">
+      </iframe>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <b>Kralawari FC</b> &middot; Est. 2018 &middot; Kralwari, Chadoora, Budgam
+</footer>
+
+<script>
+  // roster data
+  const roster = [
+    ["Raqib",18,"DF"], ["Sameer",10,"MF"], ["Moomin K",17,"MF/FWD"],
+    ["Hanan",7,"FWD/MF"], ["Ashu",14,"MF/DF"], ["Afaq",2,"DF"],
+    ["Usaid",11,"FWD"], ["Faizan",9,"DF/MF/FWD"], ["Shahid",22,"FWD"],
+    ["Umar",13,"MF"], ["Mursl",21,"DF"], ["Jimmy",3,"DF"],
+    ["Kabiz",1,"GK"], ["Moomin",4,"DF"], ["Kralwari FC",5,""],
+    ["Kralwari FC",6,""], ["Kralwari FC",8,""], ["Kralwari FC",15,""]
+  ];
+
+  const rosterEl = document.getElementById('roster');
+  function initials(name){
+    return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  }
+  roster.forEach(([name,num,pos], i) => {
+    const card = document.createElement('div');
+    card.className = 'player';
+    card.style.animationDelay = (i * 0.05) + 's';
+    card.innerHTML = `
+      <div class="player-photo"><span>${initials(name)}</span></div>
+      <div class="player-info">
+        <div class="pname">${name}</div>
+        <div class="pnum">No. ${num}${pos ? ' · ' + pos : ''}</div>
+      </div>`;
+    rosterEl.appendChild(card);
+  });
+
+  // total unique squad members for the stat
+  const allNames = new Set();
+  roster.forEach(([name]) => allNames.add(name));
+  document.getElementById('squadCount').textContent = allNames.size;
+
+  // menu
+  const menuBtn = document.getElementById('menuBtn');
+  const navOverlay = document.getElementById('navOverlay');
+  function closeMenu(){
+    menuBtn.classList.remove('open');
+    navOverlay.classList.remove('active');
+  }
+  menuBtn.addEventListener('click', () => {
+    menuBtn.classList.toggle('open');
+    navOverlay.classList.toggle('active');
+  });
+  navOverlay.querySelectorAll('[data-close]').forEach(el => {
+    el.addEventListener('click', closeMenu);
+  });
+
+  // topbar solid on scroll
+  const topbar = document.getElementById('topbar');
+  window.addEventListener('scroll', () => {
+    topbar.classList.toggle('solid', window.scrollY > 40);
+  });
+
+  // scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.2 });
+  revealEls.forEach(el => revealObserver.observe(el));
+</script>
+</body>
+</html>
